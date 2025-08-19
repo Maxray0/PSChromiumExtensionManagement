@@ -1,3 +1,18 @@
+<#
+Chrome Web Store Browser Extension Management for Chromium Browsers
+Currently Supports Edge and Chrome
+
+The module uses the ExtensionSettings Policy to do its work.
+https://chromeenterprise.google/policies/?policy=ExtensionSettings
+
+Gabor Nemeth 2025
+https://github.com/KopterBuzz/PSChromiumExtensionManagement
+
+If you want to report an issue, raise an issue on Github.
+If you want to contribute, fork the repo and raise a PR.
+#>
+
+#global variables to store state for supported browsers
 $PSChromiumSupportedBrowsers = @{
     "Google Chrome" = [PSCustomObject]@{
         Name = "Google Chrome"
