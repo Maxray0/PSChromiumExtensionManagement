@@ -1,18 +1,3 @@
-<#
-Chrome Web Store Browser Extension Management for Chromium Browsers
-Currently Supports Edge and Chrome
-
-The module uses the ExtensionSettings Policy to do its work.
-https://chromeenterprise.google/policies/?policy=ExtensionSettings
-
-Gabor Nemeth 2025
-https://github.com/KopterBuzz/PSChromiumExtensionManagement
-
-If you want to report an issue, raise an issue on Github.
-If you want to contribute, fork the repo and raise a PR.
-#>
-
-#global variables to store state for supported browsers
 $PSChromiumSupportedBrowsers = @{
     "Google Chrome" = [PSCustomObject]@{
         Name = "Google Chrome"
@@ -28,15 +13,6 @@ $PSChromiumSupportedBrowsers = @{
         Installed = $false
         ExtensionSettings = $null
     }
-    #feeling cure, might delete later.
-    #(it was for debug purposes)
-    "Google Ultron" = [PSCustomObject]@{
-        Name = "Google Ultron"
-        RegistryPath = "HKLM:\SOFTWARE\Policies\Google\Ultron"
-        ExtensionSettingsName = "ExtensionSettings"
-        Installed = $false
-        ExtensionSettings = $null
-    }
 }
 
 #evil genius trick to allow some PowerShell 5 cmdlets
@@ -44,7 +20,85 @@ $PSChromiumGetPackageSession = $null
 if($PSVersionTable.PSVersion.Major -eq 7) {$PSChromiumGetPackageSession = New-PSSession -UseWindowsPowerShell}
 
 #list of available Extension Permissions
-$PSChromiumSupportedExtensionPermissions = Get-Content $((get-location).path+"\ChromiumExtensionPermissions.txt")
+$PSChromiumSupportedExtensionPermissions =  @(
+    "accessibilityFeatures.modify",
+    "accessibilityFeatures.read",
+    "activeTab",
+    "alarms",
+    "audio",
+    "background",
+    "bookmarks",
+    "browsingData",
+    "certificateProvider",
+    "clipboardRead",
+    "clipboardWrite",
+    "contentSettings",
+    "contextMenus",
+    "cookies",
+    "debugger",
+    "declarativeContent",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "declarativeNetRequestFeedback",
+    "dns",
+    "desktopCapture",
+    "documentScan",
+    "downloads",
+    "downloads.open",
+    "downloads.ui",
+    "enterprise.deviceAttributes",
+    "enterprise.hardwarePlatform",
+    "enterprise.networkingAttributes",
+    "enterprise.platformKeys",
+    "favicon",
+    "fileBrowserHandler",
+    "fileSystemProvider",
+    "fontSettings",
+    "gcm",
+    "geolocation",
+    "history",
+    "identity",
+    "identity.email",
+    "idle",
+    "loginState",
+    "management",
+    "nativeMessaging",
+    "notifications",
+    "offscreen",
+    "pageCapture",
+    "platformKeys",
+    "power",
+    "printerProvider",
+    "printing",
+    "printingMetrics",
+    "privacy",
+    "processes",
+    "proxy",
+    "readingList",
+    "runtime",
+    "scripting",
+    "search",
+    "sessions",
+    "sidePanel",
+    "storage",
+    "system.cpu",
+    "system.display",
+    "system.memory",
+    "system.storage",
+    "tabCapture",
+    "tabGroups",
+    "tabs",
+    "topSites",
+    "tts",
+    "ttsEngine",
+    "unlimitedStorage",
+    "vpnProvider",
+    "wallpaper",
+    "webAuthenticationProxy",
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking"
+)
 
 
 #to check if specific browser or browsers are installed
@@ -79,9 +133,15 @@ Param(
 
     foreach ($Browser in $BrowserName) {
         $Data = $null
-        $JSON = Get-ItemPropertyValue -Path $PSChromiumSupportedBrowsers[$Browser].RegistryPath `
-                                      -Name $PSChromiumSupportedBrowsers[$Browser].ExtensionSettingsName `
-                                      -ErrorAction SilentlyContinue
+        $JSON = $null
+        try {
+            $JSON = Get-ItemPropertyValue -Path $PSChromiumSupportedBrowsers[$Browser].RegistryPath `
+                                        -Name $PSChromiumSupportedBrowsers[$Browser].ExtensionSettingsName `
+                                        -ErrorAction SilentlyContinue
+        } catch {
+            $JSON = $null
+        }
+
 
         if ($JSON) {
             $Data = $JSON | ConvertFrom-Json
